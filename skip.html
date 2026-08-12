@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جارِ فتح الرابط… | Linkora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>#navbar,#footer{display:none;}</style>
+</head>
+<body>
+<div id="toast-container"></div>
+<main class="skip-page"><div class="skip-inner" id="skipRoot"><div class="loading-splash">جارِ التحقق من الرابط…</div></div></main>
+
+<script src="/shared.js"></script>
+<script>
+const SKIP_TIPS = [
+  {title:'نصيحة أمنية', body:'فعّل التحقق بخطوتين على جميع حساباتك المهمة. هذه الخطوة البسيطة تحميك من أغلب محاولات الاختراق حتى لو تسرّبت كلمة المرور الخاصة بك.'},
+  {title:'نصيحة تقنية', body:'احتفظ بنسخة احتياطية من ملفاتك المهمة بشكل دوري في أكثر من مكان — تخزين سحابي أو قرص خارجي — لتفادي فقدانها بشكل مفاجئ.'},
+  {title:'نصيحة مالية', body:'عند التعامل مع العملات الرقمية، تحقق دائمًا من عنوان المحفظة حرفًا بحرف قبل إرسال أي مبلغ، فتحويلات البلوك تشين لا يمكن التراجع عنها.'},
+  {title:'نصيحة عامة', body:'خصص لنفسك استراحة قصيرة كل ساعة أثناء استخدام الجهاز؛ هذا يقلل إجهاد العينين ويحسّن تركيزك خلال اليوم.'}
+];
+
+const params = new URLSearchParams(location.search);
+const linkId = params.get('id');
+const stage = Math.min(Math.max(parseInt(params.get('stage')) || 1, 1), 4);
+const token = params.get('t');
+const ts = params.get('ts');
+const root = document.getElementById('skipRoot');
+let timerInterval = null;
+
+function buildStageUrl(n){
+  return `/skip.html?id=${encodeURIComponent(linkId)}&stage=${n}&t=${encodeURIComponent(token)}&ts=${encodeURIComponent(ts)}`;
+}
+
+function renderInvalid(message){
+  root.innerHTML = `<div class="skip-final">
+    <div class="final-icon" style="background:rgba(178,74,74,.15);color:var(--stamp);">${icon('link')}</div>
+    <h2>تعذّر فتح هذا الرابط</h2>
+    <p class="text-dim" style="margin-top:8px;">${message}</p>
+    <a href="/index.html" class="btn btn-ghost btn-block" style="margin-top:22px;">العودة للرئيسية</a>
+  </div>`;
+}
+
+function renderStage(stageSeconds){
+  const tip = SKIP_TIPS[(stage - 1) % SKIP_TIPS.length];
+  const adSize = stage === 1 ? '728×90' : (stage % 2 === 0 ? '300×250' : '320×50');
+  root.innerHTML = `
+    ${ticketHTML(stage)}
+    <div class="skip-stage-lbl">المرحلة ${stage} من 4</div>
+    <div class="ad-box">مساحة إعلانية — ${adSize}<small>يُعرض هنا كود شبكتك الإعلانية الحقيقية بعد ربطها</small></div>
+    <div class="article-mini"><h4>${tip.title}</h4><p>${tip.body}</p></div>
+    <div class="timer-wrap">
+      <svg class="timer-ring" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" class="ring-bg"></circle>
+        <circle cx="50" cy="50" r="45" class="ring-fg" id="ringFg"></circle>
+      </svg>
+      <span id="timerNum" class="timer-num mono">${stageSeconds}</span>
+    </div>
+    <button id="continueBtn" class="btn btn-primary btn-block btn-disabled" disabled>انتظر…</button>
+    <p class="skip-note">لماذا نعرض الإعلانات؟ تساعدنا في دفع أرباح حقيقية لصاحب هذا الرابط 💛</p>
+  `;
+
+  const circumference = 2 * Math.PI * 45;
+  const ring = document.getElementById('ringFg');
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = 0;
+
+  let remaining = stageSeconds;
+  const numEl = document.getElementById('timerNum');
+  const btn = document.getElementById('continueBtn');
+  function tick(){
+    ring.style.strokeDashoffset = circumference * (1 - remaining / stageSeconds);
+    numEl.textContent = remaining;
+  }
+  tick();
+  timerInterval = setInterval(() => {
+    remaining--;
+    if(remaining <= 0){
+      remaining = 0; tick();
+      clearInterval(timerInterval);
+      btn.disabled = false;
+      btn.classList.remove('btn-disabled');
+      btn.textContent = stage < 4 ? 'متابعة إلى المرحلة التالية' : 'فتح الرابط الآن';
+    } else { tick(); }
+  }, 1000);
+
+  btn.addEventListener('click', () => {
+    if(btn.disabled) return;
+    if(stage < 4){
+      location.href = buildStageUrl(stage + 1);
+    } else {
+      completeVisit(btn);
+    }
+  });
+}
+
+async function completeVisit(btn){
+  btn.disabled = true;
+  btn.textContent = 'جارِ التحقق…';
+  try{
+    const data = await api('/api/visits', { method: 'POST', body: { id: linkId, t: token, ts } });
+    renderFinal(data.longUrl, data.earning);
+  }catch(err){
+    root.innerHTML = `<div class="skip-final">
+      <div class="final-icon" style="background:rgba(178,74,74,.15);color:var(--stamp);">${icon('link')}</div>
+      <h2>تعذّر إتمام الزيارة</h2>
+      <p class="text-dim" style="margin-top:8px;">${err.message}</p>
+      <a href="/index.html" class="btn btn-ghost btn-block" style="margin-top:22px;">العودة للرئيسية</a>
+    </div>`;
+  }
+}
+
+function renderFinal(longUrl, earning){
+  root.innerHTML = `<div class="skip-final">
+    <div class="final-icon">${icon('check')}</div>
+    <h2>تم فتح الرابط بنجاح!</h2>
+    <p class="text-dim" style="margin-top:8px;">رابطك جاهز الآن للانتقال إليه</p>
+    <div class="ad-box" style="margin-top:22px;">مساحة إعلانية</div>
+    <div class="dest-box">${longUrl}</div>
+    <a href="${longUrl}" target="_blank" rel="noopener" class="btn btn-copper btn-lg btn-block">الانتقال إلى الوجهة</a>
+    <p class="skip-note">تم إضافة ${money(earning)} إلى رصيد صاحب هذا الرابط 💰</p>
+    <a href="/index.html" class="btn btn-ghost btn-block" style="margin-top:14px;">العودة للرئيسية</a>
+  </div>`;
+}
+
+(async () => {
+  if(!linkId || !token || !ts){
+    renderInvalid('هذا الرابط غير مكتمل أو تم فتحه بطريقة غير صحيحة. تأكد من استخدام الرابط المختصر نفسه (يبدأ بـ /l/) وليس هذه الصفحة مباشرة.');
+    return;
+  }
+  try{
+    const info = await api('/api/link-info?id=' + encodeURIComponent(linkId));
+    renderStage(info.stageSeconds || 30);
+  }catch(err){
+    renderInvalid('هذا الرابط غير موجود، أو تم حذفه، أو انتهت صلاحيته.');
+  }
+})();
+</script>
+</body>
+</html>

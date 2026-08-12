@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنشاء حساب | Linkora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<header id="navbar"></header>
+
+<main class="auth-wrap">
+  <div class="card">
+    <h1>إنشاء حساب جديد</h1>
+    <p class="sub">مجاني بالكامل — ابدأ باختصار روابطك والربح منها</p>
+    <div class="form-error" id="errorBox"></div>
+    <form id="registerForm">
+      <div class="field"><label>الاسم الكامل</label><input type="text" id="name" required autocomplete="name"></div>
+      <div class="field"><label>البريد الإلكتروني</label><input type="email" id="email" required autocomplete="email"></div>
+      <div class="field"><label>كلمة المرور</label><input type="password" id="password" required minlength="6" autocomplete="new-password"><span class="hint">6 أحرف على الأقل</span></div>
+      <button type="submit" class="btn btn-copper btn-block" id="submitBtn">إنشاء الحساب</button>
+    </form>
+    <p class="auth-switch">لديك حساب بالفعل؟ <a href="/login.html">تسجيل الدخول</a></p>
+  </div>
+</main>
+
+<footer id="footer">
+  <div class="container footer-bottom"><span>© 2026 Linkora</span><a href="/index.html" class="text-dim">العودة للرئيسية</a></div>
+</footer>
+
+<script src="/shared.js"></script>
+<script>
+(async () => {
+  const user = await initShell(null);
+  if (user) { location.href = '/dashboard.html'; return; }
+})();
+
+const form = document.getElementById('registerForm');
+const errorBox = document.getElementById('errorBox');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorBox.classList.remove('show');
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'جارِ الإنشاء...';
+  try {
+    await api('/api/auth/register', { method: 'POST', body: { name, email, password } });
+    location.href = '/dashboard.html';
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.classList.add('show');
+    btn.disabled = false; btn.textContent = 'إنشاء الحساب';
+  }
+});
+</script>
+</body>
+</html>

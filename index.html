@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linkora | لينكورا — اختصر رابطك وابدأ الربح</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<header id="navbar"></header>
+
+<main id="app">
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow">منصّة تخطي وربح الروابط</div>
+      <h1>كل رابط يمر ببوابة، <span>وكل بوابة تساوي أرباحًا حقيقية</span></h1>
+      <p class="hero-sub">اختصر رابطك، شاركه مع جمهورك، واحصل على أرباح حقيقية تُدفع مباشرة إلى محفظتك الرقمية — بلا وسيط وبلا تعقيد.</p>
+      <div class="shorten-form">
+        <input type="url" id="homeUrlInput" placeholder="الصق رابطك الطويل هنا…">
+        <button class="btn btn-copper" id="shortenBtn">اختصار وربح</button>
+      </div>
+      <div class="shorten-result" id="homeResult"></div>
+    </div>
+    <div class="hero-visual">
+      <div id="heroTicket"></div>
+      <p class="text-faint" style="text-align:center;font-size:12px;margin-top:12px;">تجربة توضيحية لمراحل فتح أي رابط</p>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  <div class="stats-strip">
+    <div class="stat-cell"><div class="num" id="statUsers">—</div><div class="lbl">مستخدم مسجّل</div></div>
+    <div class="stat-cell"><div class="num" id="statLinks">—</div><div class="lbl">رابط تم اختصاره</div></div>
+    <div class="stat-cell"><div class="num" id="statPaid">—</div><div class="lbl">أرباح دُفعت للمستخدمين</div></div>
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-head">
+    <div class="eyebrow">العملية بالكامل</div>
+    <h2>كيف تعمل المنصة</h2>
+    <p>أربع خطوات فعلية بالترتيب — من الرابط إلى الرصيد</p>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="step-no">1</div><h4>أنشئ حسابًا مجانًا</h4><p>سجّل بريدك الإلكتروني وابدأ خلال ثوانٍ.</p></div>
+    <div class="step"><div class="step-no">2</div><h4>اختصر رابطك</h4><p>الصق أي رابط طويل واحصل على رابط قصير خاص بك.</p></div>
+    <div class="step"><div class="step-no">3</div><h4>الزائر يمر بأربع مراحل</h4><p>كل زائر يشاهد إعلانًا لمدة 30 ثانية في كل مرحلة قبل الوصول للوجهة.</p></div>
+    <div class="step"><div class="step-no">4</div><h4>تربح تلقائيًا</h4><p>تُضاف الأرباح لرصيدك فور اكتمال الزيارة، وتسحبها بالعملة الرقمية.</p></div>
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-head">
+    <div class="eyebrow">الأرباح</div>
+    <h2>عائد تقديري لكل 1000 زيارة مكتملة</h2>
+    <p>يعتمد العائد الفعلي على شبكة الإعلانات المرتبطة وبلد الزائر — الأرقام هنا للتوضيح العام</p>
+  </div>
+  <div class="card" id="tierCard"></div>
+</section>
+
+<section class="section container">
+  <div class="section-head"><div class="eyebrow">مقالات</div><h2>مقالات مختارة</h2></div>
+  <div class="articles-grid" id="articlesPreview"></div>
+</section>
+
+<section class="section container" id="faqSection">
+  <div class="section-head"><div class="eyebrow">أسئلة شائعة</div><h2>كل ما تحتاج معرفته</h2></div>
+  <div class="card" id="faqCard"></div>
+</section>
+</main>
+
+<footer id="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4 style="font-size:15px;color:var(--ink);margin-bottom:10px;">Linkora — لينكورا</h4>
+        <p class="text-dim" style="font-size:13px;">منصة عربية لاختصار الروابط وتحويلها إلى مصدر دخل حقيقي يُدفع بالعملات الرقمية.</p>
+      </div>
+      <div class="footer-col"><h4>المنصة</h4><a href="/index.html">الرئيسية</a><a href="/dashboard.html">لوحة التحكم</a><a href="/articles.html">المقالات</a></div>
+      <div class="footer-col"><h4>الدعم</h4><a href="/index.html#faqSection">الأسئلة الشائعة</a></div>
+      <div class="footer-col"><h4>الحساب</h4><a href="/login.html">تسجيل الدخول</a><a href="/register.html">إنشاء حساب</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Linkora. جميع الحقوق محفوظة.</span><span>صُنع لأصحاب الروابط والمحتوى العربي</span></div>
+  </div>
+</footer>
+
+<script src="/shared.js"></script>
+<script>
+const SKIP_TIPS_PREVIEW = [
+  {icon:'shield', title:'كيف تحمي حساباتك الرقمية من الاختراق', excerpt:'خطوات عملية وبسيطة تقلل بشكل كبير من فرص تعرض حساباتك للاختراق.'},
+  {icon:'coin', title:'دليلك المختصر لأمان العملات الرقمية', excerpt:'أهم النقاط التي يجب التحقق منها قبل إرسال أو استقبال أي عملة رقمية.'},
+  {icon:'chart', title:'5 طرق لزيادة أرباحك من مشاركة الروابط', excerpt:'أفضل الممارسات لمشاركة روابطك وزيادة عدد الزيارات الحقيقية.'}
+];
+const TIERS = [
+  {flag:'🇺🇸', name:'الفئة الأولى', countries:'أمريكا، بريطانيا، كندا، أستراليا، ألمانيا', rate:40},
+  {flag:'🇸🇦', name:'الفئة الثانية (خليجي)', countries:'السعودية، الإمارات، الكويت، قطر، البحرين', rate:20},
+  {flag:'🌍', name:'الفئة الثالثة', countries:'باقي الدول العربية والعالم', rate:6}
+];
+const FAQS = [
+  {q:'كيف أستلم أرباحي؟', a:'نقوم بالدفع حصريًا عبر العملات الرقمية (USDT، Bitcoin، Ethereum، Tron). أضف عنوان محفظتك من صفحة الملف الشخصي، ثم أرسل طلب سحب بعد الوصول للحد الأدنى.'},
+  {q:'ما الحد الأدنى للسحب؟', a:'الحد الأدنى الافتراضي هو 5$، ويمكن لصاحب المنصة تعديله من لوحة التحكم الخاصة بالمالك.'},
+  {q:'كم عدد صفحات التخطي لكل رابط؟', a:'كل رابط يمر بأربع مراحل، كل مرحلة تعرض إعلانًا مع مؤقت مدته 30 ثانية قبل تفعيل زر المتابعة — ويُحتسب الوقت فعليًا في الخادم وليس فقط في المتصفح.'},
+  {q:'هل الخدمة مجانية للاستخدام؟', a:'نعم، إنشاء الحساب واختصار الروابط مجاني بالكامل. تأتي الأرباح من نسبة الإعلانات التي تُعرض على الزائر قبل وصوله للوجهة.'}
+];
+
+let heroTicketInterval = null;
+function startHeroTicketDemo(){
+  const el = document.getElementById('heroTicket');
+  if(!el) return;
+  let s = 1;
+  el.innerHTML = ticketHTML(s);
+  clearInterval(heroTicketInterval);
+  heroTicketInterval = setInterval(()=>{ s = s>=5?1:s+1; el.innerHTML = ticketHTML(s); }, 1100);
+}
+
+function renderStaticSections(){
+  document.getElementById('tierCard').innerHTML = TIERS.map(t=>`<div class="tier-row">
+    <div style="display:flex;align-items:center;gap:12px;"><span class="tier-flag">${t.flag}</span><div><div class="tier-name">${t.name}</div><div class="tier-countries">${t.countries}</div></div></div>
+    <div class="tier-rate">حتى ${money(t.rate)}</div></div>`).join('');
+
+  document.getElementById('articlesPreview').innerHTML = SKIP_TIPS_PREVIEW.map(a=>`<div class="article-card" onclick="location.href='/articles.html'">
+    <div class="a-icon">${icon(a.icon)}</div><h4>${a.title}</h4><p>${a.excerpt}</p><a href="/articles.html" class="read-more">قراءة المزيد ←</a></div>`).join('');
+
+  document.getElementById('faqCard').innerHTML = FAQS.map((f,i)=>`<div class="faq-item" id="faq${i}">
+    <button class="faq-q" onclick="toggleFaq(${i})"><span>${f.q}</span><span class="plus">+</span></button>
+    <div class="faq-a">${f.a}</div></div>`).join('');
+}
+function toggleFaq(i){ document.getElementById('faq'+i).classList.toggle('open'); }
+
+async function loadStats(){
+  try{
+    const s = await api('/api/stats');
+    document.getElementById('statUsers').textContent = num(s.totalUsers) + '+';
+    document.getElementById('statLinks').textContent = num(s.totalLinks) + '+';
+    document.getElementById('statPaid').textContent = money(s.totalPaidOut);
+  }catch(e){ /* leave placeholders */ }
+}
+
+async function handleShorten(){
+  const input = document.getElementById('homeUrlInput');
+  const url = input.value.trim();
+  if(!/^https?:\/\/.+\..+/i.test(url)){ toast('أدخل رابطًا صحيحًا يبدأ بـ http:// أو https://','error'); return; }
+  if(!currentUser){
+    toast('سجّل حسابًا مجانيًا لإنشاء رابط مربح 🎉');
+    location.href = '/register.html';
+    return;
+  }
+  try{
+    const { link } = await api('/api/links', { method:'POST', body:{ longUrl: url } });
+    const shortUrl = location.origin + '/l/' + link.code;
+    const box = document.getElementById('homeResult');
+    box.classList.add('show');
+    box.innerHTML = `<span class="mono text-mint">${shortUrl}</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm btn-ghost" onclick="copyText('${shortUrl}')">نسخ</button>
+        <a href="/dashboard.html" class="btn btn-sm btn-copper">لوحة التحكم</a>
+      </div>`;
+    input.value = '';
+  }catch(err){ toast(err.message, 'error'); }
+}
+
+(async () => {
+  await initShell('home');
+  renderStaticSections();
+  startHeroTicketDemo();
+  loadStats();
+  document.getElementById('shortenBtn').addEventListener('click', handleShorten);
+})();
+</script>
+</body>
+</html>

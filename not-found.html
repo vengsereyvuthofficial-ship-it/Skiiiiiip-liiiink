@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الرابط غير موجود | Linkora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<header id="navbar"></header>
+<main class="skip-page">
+  <div class="skip-inner skip-final">
+    <div class="final-icon" style="background:rgba(178,74,74,.15);color:var(--stamp);"></div>
+    <h2>هذا الرابط غير موجود</h2>
+    <p class="text-dim" style="margin-top:8px;">تحقق من الرابط المختصر الذي استخدمته، أو أن صاحب الرابط لم يقم بحذفه.</p>
+    <a href="/index.html" class="btn btn-copper btn-block" style="margin-top:22px;">العودة للرئيسية</a>
+  </div>
+</main>
+<footer id="footer">
+  <div class="container footer-bottom"><span>© 2026 Linkora</span></div>
+</footer>
+<script src="/shared.js"></script>
+<script>
+document.querySelector('.final-icon').innerHTML = icon('link');
+initShell(null);
+</script>
+</body>
+</html>

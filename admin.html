@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم المالك | Linkora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<header id="navbar"></header>
+
+<main class="container page">
+  <div class="page-head"><h1>لوحة تحكم المالك</h1></div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="lbl">إجمالي المستخدمين</div><div class="val" id="stUsers">—</div></div>
+    <div class="stat-card"><div class="lbl">إجمالي الروابط</div><div class="val" id="stLinks">—</div></div>
+    <div class="stat-card"><div class="lbl">المدفوع للمستخدمين</div><div class="val text-copper" id="stPaid">—</div></div>
+    <div class="stat-card"><div class="lbl">طلبات سحب معلقة</div><div class="val" id="stPending">—</div></div>
+  </div>
+
+  <div class="admin-grid">
+    <div class="card">
+      <h3>إعدادات الأرباح والإعلانات</h3>
+      <div class="field"><label>سعر الإعلان (CPM) — دولار لكل 1000 مشاهدة</label><input type="number" id="cpmInput" step="0.1" min="0"></div>
+      <div class="field"><label>عدد الإعلانات في كل زيارة مكتملة (عدد صفحات التخطي)</label><input type="number" id="adsInput" min="1" max="10"></div>
+      <div class="field"><label>نسبة أرباح المستخدم</label><div class="range-row"><input type="range" id="shareInput" min="0" max="100"><span id="shareVal">—</span></div></div>
+      <div class="field"><label>الحد الأدنى للسحب ($)</label><input type="number" id="minWithdrawInput" min="0"></div>
+      <div class="field"><label>مدة كل مرحلة (ثانية)</label><input type="number" id="secondsInput" min="5" max="300"></div>
+      <button class="btn btn-primary btn-block" id="saveSettingsBtn">حفظ الإعدادات</button>
+    </div>
+
+    <div class="card">
+      <h3>حاسبة الأرباح المتوقعة</h3>
+      <div class="field"><label>عدد الزيارات المكتملة شهريًا</label><input type="number" id="calcVisits" value="10000"></div>
+      <div id="calcResults"></div>
+      <div class="split-bar"><div class="split-user" id="splitUserBar"></div><div class="split-owner" id="splitOwnerBar"></div></div>
+      <div class="split-legend"><span><i class="dot user"></i>أرباح المستخدمين</span><span><i class="dot owner"></i>ربح الموقع</span></div>
+      <p class="text-faint" style="font-size:11.5px;margin-top:14px;">المعادلة: الأرباح الإجمالية = (الزيارات ÷ 1000) × عدد الإعلانات لكل زيارة × سعر الإعلان — ثم تُقسّم حسب النسبة المحددة.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h3>طلبات السحب المعلقة</h3>
+    <div class="table-wrap" id="pendingWTable"><div class="empty-state">جارِ التحميل…</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h3>ربط شبكات الإعلانات</h3>
+    <p class="text-dim" style="font-size:13px;">مساحات الإعلانات الموزعة في صفحات التخطي تقرأ أكوادها من متغيرات البيئة على الخادم (أو من ملف <span class="mono">skip.html</span> مباشرة). أضف كود شبكتك الإعلانية الحقيقي هناك بعد اعتماد حسابك — راجع ملف <span class="mono">README.md</span> لمزيد من التفاصيل.</p>
+  </div>
+</main>
+
+<footer id="footer">
+  <div class="container footer-bottom"><span>© 2026 Linkora</span><a href="/index.html" class="text-dim">العودة للرئيسية</a></div>
+</footer>
+
+<script src="/shared.js"></script>
+<script>
+function money2(n){ return money(n); }
+
+async function loadSettings(){
+  const { settings } = await api('/api/admin/settings');
+  document.getElementById('cpmInput').value = settings.cpm;
+  document.getElementById('adsInput').value = settings.adsPerVisit;
+  document.getElementById('shareInput').value = settings.userSharePct;
+  document.getElementById('shareVal').textContent = settings.userSharePct + '%';
+  document.getElementById('minWithdrawInput').value = settings.minWithdraw;
+  document.getElementById('secondsInput').value = settings.stageSeconds;
+  updateCalc();
+}
+async function saveSettings(){
+  const btn = document.getElementById('saveSettingsBtn');
+  btn.disabled = true;
+  try{
+    await api('/api/admin/settings', { method:'POST', body:{
+      cpm: parseFloat(document.getElementById('cpmInput').value),
+      adsPerVisit: parseFloat(document.getElementById('adsInput').value),
+      userSharePct: parseFloat(document.getElementById('shareInput').value),
+      minWithdraw: parseFloat(document.getElementById('minWithdrawInput').value),
+      stageSeconds: parseFloat(document.getElementById('secondsInput').value)
+    }});
+    toast('تم حفظ إعدادات المنصة ✅');
+  }catch(err){ toast(err.message,'error'); }
+  btn.disabled = false;
+}
+function updateCalc(){
+  const visits = parseFloat(document.getElementById('calcVisits').value)||0;
+  const cpm = parseFloat(document.getElementById('cpmInput').value)||0;
+  const ads = parseFloat(document.getElementById('adsInput').value)||0;
+  const share = parseFloat(document.getElementById('shareInput').value)||0;
+  document.getElementById('shareVal').textContent = share+'%';
+  const totalRevenue = (visits*ads/1000)*cpm;
+  const userTotal = totalRevenue*(share/100);
+  const ownerTotal = totalRevenue-userTotal;
+  document.getElementById('calcResults').innerHTML = `
+    <div class="calc-row"><span class="text-dim">الأرباح الإجمالية</span><b>${money2(totalRevenue)}</b></div>
+    <div class="calc-row"><span class="text-dim">أرباح المستخدمين</span><b class="text-mint">${money2(userTotal)}</b></div>
+    <div class="calc-row"><span class="text-dim">صافي ربح الموقع</span><b class="text-copper">${money2(ownerTotal)}</b></div>`;
+  const userPct = totalRevenue>0 ? (userTotal/totalRevenue*100) : share;
+  document.getElementById('splitUserBar').style.width = userPct+'%';
+  document.getElementById('splitOwnerBar').style.width = (100-userPct)+'%';
+}
+['calcVisits','cpmInput','adsInput','shareInput'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateCalc);
+});
+
+async function loadStats(){
+  const s = await api('/api/admin/stats');
+  document.getElementById('stUsers').textContent = num(s.totalUsers);
+  document.getElementById('stLinks').textContent = num(s.totalLinks);
+  document.getElementById('stPaid').textContent = money(s.totalPaidOut);
+  document.getElementById('stPending').textContent = num(s.pendingWithdrawalsCount);
+}
+
+async function loadPending(){
+  const { withdrawals } = await api('/api/admin/withdrawals');
+  const el = document.getElementById('pendingWTable');
+  if(withdrawals.length===0){ el.innerHTML = '<div class="empty-state">لا توجد طلبات سحب معلقة حاليًا.</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>المستخدم</th><th>المبلغ</th><th>المحفظة</th><th>العنوان</th><th>التاريخ</th><th>إجراء</th></tr></thead><tbody>
+    ${withdrawals.map(w=>`<tr>
+      <td>${w.userName}</td>
+      <td class="mono text-copper">${money(w.amount)}</td>
+      <td class="mono" style="font-size:12px;">${w.wallet}</td>
+      <td class="mono text-faint" style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.address}</td>
+      <td class="mono text-dim">${w.date}</td>
+      <td><div style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-primary" onclick="actWithdrawal('${w.id}','approve')">موافقة</button>
+        <button class="btn btn-sm btn-danger" onclick="actWithdrawal('${w.id}','reject')">رفض</button>
+      </div></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+async function actWithdrawal(id, action){
+  try{
+    await api('/api/admin/withdrawals', { method:'POST', body:{ id, action } });
+    toast(action==='approve' ? 'تمت الموافقة على طلب السحب ✅' : 'تم رفض طلب السحب وإعادة المبلغ للرصيد');
+    await loadPending();
+    await loadStats();
+  }catch(err){ toast(err.message,'error'); }
+}
+
+(async () => {
+  const user = await guardPage({ active:null, admin:true, auth:true });
+  if(!user) return;
+  document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+  await loadSettings();
+  await loadStats();
+  await loadPending();
+})();
+</script>
+</body>
+</html>

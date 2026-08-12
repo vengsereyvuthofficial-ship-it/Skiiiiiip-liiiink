@@ -1,0 +1,19 @@
+{
+  "name": "linkora",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Linkora — real link-shortener + ad-view monetization platform (Vercel Functions + Upstash Redis).",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  }
+}

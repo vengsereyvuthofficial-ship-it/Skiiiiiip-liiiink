@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم | Linkora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<header id="navbar"></header>
+
+<main class="container page">
+  <div class="page-head"><h1>لوحة التحكم</h1></div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="lbl">الرصيد الحالي</div><div class="val text-copper" id="sBalance">—</div></div>
+    <div class="stat-card"><div class="lbl">إجمالي الأرباح</div><div class="val" id="sTotal">—</div></div>
+    <div class="stat-card"><div class="lbl">إجمالي الزيارات</div><div class="val" id="sClicks">—</div></div>
+    <div class="stat-card"><div class="lbl">عدد الروابط</div><div class="val" id="sLinks">—</div></div>
+  </div>
+
+  <div class="dash-grid">
+    <div>
+      <div class="card">
+        <h3>إنشاء رابط جديد</h3>
+        <div class="input-row">
+          <input type="url" id="dashUrlInput" placeholder="https://رابطك-الطويل.com/...">
+          <button class="btn btn-copper" id="createBtn">اختصار</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>روابطي</h3>
+        <div id="linksWrap"><div class="empty-state">جارِ التحميل…</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3>أرباح كل رابط</h3>
+        <div id="earnBars"><p class="text-faint" style="font-size:13px;">أنشئ رابطك الأول لترى إحصاءاته هنا.</p></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer id="footer">
+  <div class="container footer-bottom"><span>© 2026 Linkora</span><a href="/index.html" class="text-dim">العودة للرئيسية</a></div>
+</footer>
+
+<script src="/shared.js"></script>
+<script>
+let myLinks = [];
+
+function renderLinks(){
+  const wrap = document.getElementById('linksWrap');
+  if(myLinks.length === 0){
+    wrap.innerHTML = '<div class="empty-state">لا توجد روابط بعد. أنشئ أول رابط لك من الأعلى.</div>';
+    return;
+  }
+  wrap.innerHTML = myLinks.map(l => {
+    const shortUrl = location.origin + '/l/' + l.code;
+    return `<div class="link-row">
+      <div class="link-main">
+        <div class="link-short">${icon('link')} ${shortUrl}</div>
+        <div class="link-url">${l.longUrl}</div>
+      </div>
+      <div class="link-stats"><span>نقرات <b>${num(l.clicks)}</b></span><span>أرباح <b class="text-copper">${money(l.earnings)}</b></span></div>
+      <div class="link-actions">
+        <button class="btn btn-sm btn-ghost" onclick="copyText('${shortUrl}')" title="نسخ">${icon('copy')}</button>
+        <a class="btn btn-sm btn-primary" href="${shortUrl}" target="_blank" rel="noopener">معاينة الزيارة</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderBars(){
+  const el = document.getElementById('earnBars');
+  if(myLinks.length === 0) return;
+  const max = Math.max(...myLinks.map(l=>l.earnings), 0.01);
+  el.innerHTML = `<div class="mini-bars">` + myLinks.slice(0,8).map(l=>{
+    const pct = Math.max((l.earnings/max)*100, 3);
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span class="mono text-faint" style="font-size:11px;width:52px;flex-shrink:0;">${l.code}</span>
+      <div style="flex:1;background:var(--bg-2);border-radius:6px;overflow:hidden;height:10px;">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--copper-dim),var(--copper));"></div>
+      </div>
+      <span class="mono text-copper" style="font-size:12px;width:60px;text-align:left;flex-shrink:0;">${money(l.earnings)}</span>
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+async function loadLinks(){
+  try{
+    const data = await api('/api/links');
+    myLinks = data.links;
+    renderLinks();
+    renderBars();
+    const totalClicks = myLinks.reduce((s,l)=>s+l.clicks,0);
+    document.getElementById('sClicks').textContent = num(totalClicks);
+    document.getElementById('sLinks').textContent = num(myLinks.length);
+  }catch(err){
+    document.getElementById('linksWrap').innerHTML = '<div class="empty-state">تعذّر تحميل الروابط: ' + err.message + '</div>';
+  }
+}
+
+async function createLink(){
+  const input = document.getElementById('dashUrlInput');
+  const url = input.value.trim();
+  if(!/^https?:\/\/.+\..+/i.test(url)){ toast('أدخل رابطًا صحيحًا يبدأ بـ http:// أو https://','error'); return; }
+  const btn = document.getElementById('createBtn');
+  btn.disabled = true;
+  try{
+    await api('/api/links', { method:'POST', body:{ longUrl: url } });
+    toast('تم إنشاء الرابط بنجاح 🎉');
+    input.value = '';
+    await loadLinks();
+  }catch(err){ toast(err.message, 'error'); }
+  btn.disabled = false;
+}
+
+(async () => {
+  const user = await guardPage({ active:'dashboard', auth:true });
+  if(!user) return;
+  document.getElementById('sBalance').textContent = money(user.balance);
+  document.getElementById('sTotal').textContent = money(user.totalEarned);
+  document.getElementById('createBtn').addEventListener('click', createLink);
+  await loadLinks();
+})();
+</script>
+</body>
+</html>

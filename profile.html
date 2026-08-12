@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الملف الشخصي | Linkora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<header id="navbar"></header>
+
+<main class="container page">
+  <div class="page-head"><h1>الملف الشخصي وإعدادات السحب</h1></div>
+  <div class="dash-grid">
+    <div>
+      <div class="card">
+        <h3>معلوماتي</h3>
+        <div style="display:flex;align-items:center;gap:14px;" id="infoBox"></div>
+      </div>
+
+      <div class="card" id="walletCard">
+        <div class="empty-state">جارِ التحميل…</div>
+      </div>
+
+      <div class="card">
+        <h3>سجل عمليات السحب</h3>
+        <div class="table-wrap" id="withdrawHistory"><div class="empty-state">جارِ التحميل…</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3>طلب سحب</h3>
+        <p class="text-dim" style="font-size:13px;">الرصيد المتاح</p>
+        <p class="mono text-copper" style="font-size:26px;font-weight:600;margin-bottom:14px;" id="balanceBig">—</p>
+        <div class="field"><label>المبلغ</label><input type="number" id="withdrawAmount" placeholder="0.00"></div>
+        <button class="btn btn-copper btn-block" id="withdrawBtn">طلب السحب الآن</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer id="footer">
+  <div class="container footer-bottom"><span>© 2026 Linkora</span><a href="/index.html" class="text-dim">العودة للرئيسية</a></div>
+</footer>
+
+<script src="/shared.js"></script>
+<script>
+let me = null;
+
+function renderInfo(){
+  const initials = me.name.split(' ').map(w=>w[0]).slice(0,2).join('.') + '.';
+  document.getElementById('infoBox').innerHTML = `
+    <div class="avatar" style="width:48px;height:48px;font-size:15px;">${initials}</div>
+    <div><div style="font-weight:600;">${me.name}</div><div class="text-dim mono" style="font-size:12.5px;">${me.email}</div></div>`;
+}
+
+function walletCardHTML(){
+  const w = me.wallet || {type:'',address:''};
+  return `<h3>${icon('wallet')} إعدادات المحفظة — الدفع بالعملات الرقمية فقط</h3>
+    <p class="text-dim" style="font-size:12.5px;margin-bottom:14px;">لا تدعم المنصة السحب البنكي أو المحافظ الإلكترونية التقليدية حاليًا — الدفع حصريًا عبر العملات الرقمية.</p>
+    <div class="field">
+      <label>نوع العملة الرقمية</label>
+      <select id="walletType">
+        <option value="">اختر العملة</option>
+        <option value="USDT-TRC20" ${w.type==='USDT-TRC20'?'selected':''}>USDT (TRC20)</option>
+        <option value="USDT-BEP20" ${w.type==='USDT-BEP20'?'selected':''}>USDT (BEP20)</option>
+        <option value="BTC" ${w.type==='BTC'?'selected':''}>Bitcoin (BTC)</option>
+        <option value="ETH" ${w.type==='ETH'?'selected':''}>Ethereum (ETH)</option>
+        <option value="TRX" ${w.type==='TRX'?'selected':''}>Tron (TRX)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>عنوان المحفظة</label>
+      <input type="text" id="walletAddress" value="${w.address||''}" placeholder="الصق عنوان محفظتك هنا" class="mono">
+      <span class="hint">تأكد من نسخ العنوان بدقة — عمليات الإرسال على البلوك تشين نهائية ولا يمكن التراجع عنها.</span>
+    </div>
+    <button class="btn btn-primary" id="saveWalletBtn">حفظ إعدادات المحفظة</button>`;
+}
+
+function statusBadge(status){
+  if(status==='paid') return `<span class="badge badge-paid">${icon('check')} تم الدفع</span>`;
+  if(status==='pending') return `<span class="badge badge-pending">قيد المراجعة</span>`;
+  return `<span class="badge badge-rejected">مرفوض</span>`;
+}
+
+async function loadWithdrawals(){
+  try{
+    const { withdrawals } = await api('/api/withdrawals');
+    const el = document.getElementById('withdrawHistory');
+    if(withdrawals.length === 0){ el.innerHTML = '<div class="empty-state">لا توجد عمليات سحب بعد.</div>'; return; }
+    el.innerHTML = `<table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>المحفظة</th><th>الحالة</th></tr></thead><tbody>
+      ${withdrawals.map(w=>`<tr><td class="mono text-dim">${w.date}</td><td class="mono text-copper">${money(w.amount)}</td><td class="mono" style="font-size:12px;">${w.wallet}</td><td>${statusBadge(w.status)}</td></tr>`).join('')}
+    </tbody></table>`;
+  }catch(err){
+    document.getElementById('withdrawHistory').innerHTML = '<div class="empty-state">تعذّر التحميل: '+err.message+'</div>';
+  }
+}
+
+async function saveWallet(){
+  const type = document.getElementById('walletType').value;
+  const address = document.getElementById('walletAddress').value.trim();
+  const btn = document.getElementById('saveWalletBtn');
+  btn.disabled = true;
+  try{
+    const data = await api('/api/wallet', { method:'POST', body:{ type, address } });
+    me.wallet = data.wallet;
+    toast('تم حفظ إعدادات المحفظة ✅');
+  }catch(err){ toast(err.message, 'error'); }
+  btn.disabled = false;
+}
+
+async function requestWithdraw(){
+  const amount = parseFloat(document.getElementById('withdrawAmount').value);
+  const btn = document.getElementById('withdrawBtn');
+  btn.disabled = true;
+  try{
+    await api('/api/withdrawals', { method:'POST', body:{ amount } });
+    toast('تم إرسال طلب السحب بنجاح، سيتم مراجعته قريبًا ✅');
+    document.getElementById('withdrawAmount').value = '';
+    const meData = await api('/api/me');
+    me = meData.user;
+    document.getElementById('balanceBig').textContent = money(me.balance);
+    await loadWithdrawals();
+  }catch(err){ toast(err.message, 'error'); }
+  btn.disabled = false;
+}
+
+(async () => {
+  const user = await guardPage({ active:'profile', auth:true });
+  if(!user) return;
+  me = user;
+  renderInfo();
+  document.getElementById('walletCard').innerHTML = walletCardHTML();
+  document.getElementById('balanceBig').textContent = money(me.balance);
+  document.getElementById('saveWalletBtn').addEventListener('click', saveWallet);
+  document.getElementById('withdrawBtn').addEventListener('click', requestWithdraw);
+  await loadWithdrawals();
+})();
+</script>
+</body>
+</html>

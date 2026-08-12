@@ -122,7 +122,7 @@ async function requestWithdraw(){
     await api('/api/withdrawals', { method:'POST', body:{ amount } });
     toast('تم إرسال طلب السحب بنجاح، سيتم مراجعته قريبًا ✅');
     document.getElementById('withdrawAmount').value = '';
-    const meData = await api('/api/me');
+    const meData = await api('/api/auth');
     me = meData.user;
     document.getElementById('balanceBig').textContent = money(me.balance);
     await loadWithdrawals();

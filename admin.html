@@ -63,7 +63,7 @@
 function money2(n){ return money(n); }
 
 async function loadSettings(){
-  const { settings } = await api('/api/admin/settings');
+  const { settings } = await api('/api/admin?resource=settings');
   document.getElementById('cpmInput').value = settings.cpm;
   document.getElementById('adsInput').value = settings.adsPerVisit;
   document.getElementById('shareInput').value = settings.userSharePct;
@@ -76,7 +76,7 @@ async function saveSettings(){
   const btn = document.getElementById('saveSettingsBtn');
   btn.disabled = true;
   try{
-    await api('/api/admin/settings', { method:'POST', body:{
+    await api('/api/admin?resource=settings', { method:'POST', body:{
       cpm: parseFloat(document.getElementById('cpmInput').value),
       adsPerVisit: parseFloat(document.getElementById('adsInput').value),
       userSharePct: parseFloat(document.getElementById('shareInput').value),
@@ -109,7 +109,7 @@ function updateCalc(){
 });
 
 async function loadStats(){
-  const s = await api('/api/admin/stats');
+  const s = await api('/api/admin?resource=stats');
   document.getElementById('stUsers').textContent = num(s.totalUsers);
   document.getElementById('stLinks').textContent = num(s.totalLinks);
   document.getElementById('stPaid').textContent = money(s.totalPaidOut);
@@ -117,7 +117,7 @@ async function loadStats(){
 }
 
 async function loadPending(){
-  const { withdrawals } = await api('/api/admin/withdrawals');
+  const { withdrawals } = await api('/api/admin?resource=withdrawals');
   const el = document.getElementById('pendingWTable');
   if(withdrawals.length===0){ el.innerHTML = '<div class="empty-state">لا توجد طلبات سحب معلقة حاليًا.</div>'; return; }
   el.innerHTML = `<table><thead><tr><th>المستخدم</th><th>المبلغ</th><th>المحفظة</th><th>العنوان</th><th>التاريخ</th><th>إجراء</th></tr></thead><tbody>
@@ -136,7 +136,7 @@ async function loadPending(){
 }
 async function actWithdrawal(id, action){
   try{
-    await api('/api/admin/withdrawals', { method:'POST', body:{ id, action } });
+    await api('/api/admin?resource=withdrawals', { method:'POST', body:{ id, action } });
     toast(action==='approve' ? 'تمت الموافقة على طلب السحب ✅' : 'تم رفض طلب السحب وإعادة المبلغ للرصيد');
     await loadPending();
     await loadStats();

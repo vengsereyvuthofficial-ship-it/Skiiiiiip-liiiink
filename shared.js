@@ -111,7 +111,7 @@ function navHTML(activeRoute, user){
 async function initShell(activeRoute){
   const navEl = document.getElementById('navbar');
   try{
-    const data = await api('/api/me');
+    const data = await api('/api/auth');
     currentUser = data.user;
   }catch(e){ currentUser = null; }
   if(navEl){
@@ -119,7 +119,7 @@ async function initShell(activeRoute){
     const logoutBtn = document.getElementById('logoutBtn');
     if(logoutBtn){
       logoutBtn.addEventListener('click', async ()=>{
-        try{ await api('/api/auth/logout', {method:'POST'}); }catch(e){}
+        try{ await api('/api/auth?action=logout', {method:'POST'}); }catch(e){}
         location.href = '/index.html';
       });
     }

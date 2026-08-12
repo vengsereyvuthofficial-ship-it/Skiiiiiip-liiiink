@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/l/:code", "destination": "/api/resolve?code=:code" }
+    { "source": "/l/:code", "destination": "/api/links?code=:code" }
   ],
   "headers": [
     {

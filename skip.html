@@ -132,7 +132,7 @@ function renderFinal(longUrl, earning){
     return;
   }
   try{
-    const info = await api('/api/link-info?id=' + encodeURIComponent(linkId));
+    const info = await api('/api/links?id=' + encodeURIComponent(linkId));
     renderStage(info.stageSeconds || 30);
   }catch(err){
     renderInvalid('هذا الرابط غير موجود، أو تم حذفه، أو انتهت صلاحيته.');
